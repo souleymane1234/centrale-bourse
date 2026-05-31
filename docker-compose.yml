@@ -1,0 +1,41 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: brvm-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - brvm_redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mysql:
+    image: mysql:8.4
+    container_name: brvm-mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-brvm_agent}
+      MYSQL_USER: ${MYSQL_USER:-brvm}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-brvm_secret}
+    volumes:
+      - brvm_mysql_data:/var/lib/mysql
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${MYSQL_USER:-brvm}", "-p${MYSQL_PASSWORD:-brvm_secret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  brvm_mysql_data:
+  brvm_redis_data:

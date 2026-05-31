@@ -1,0 +1,26 @@
+{
+  "by_profile_url": {
+    "https://www.brvm.org/en/node/333": "https://www.brvm.org/sites/default/files/ivoire_25.png",
+    "https://www.brvm.org/en/node/329": "https://www.brvm.org/sites/default/files/benin.png",
+    "https://www.brvm.org/en/node/328": "https://www.brvm.org/sites/default/files/burkina_0.png",
+    "https://www.brvm.org/en/node/330": "https://www.brvm.org/sites/default/files/ivoire_26.png",
+    "https://www.brvm.org/en/node/7132": "https://www.brvm.org/sites/default/files/mali_1.png",
+    "https://www.brvm.org/en/node/331": "https://www.brvm.org/sites/default/files/niger.png",
+    "https://www.brvm.org/en/node/332": "https://www.brvm.org/sites/default/files/senegal_1.png",
+    "https://www.brvm.org/en/node/327": "https://www.brvm.org/sites/default/files/ivoire_27.png",
+    "https://www.brvm.org/en/node/326": "https://www.brvm.org/sites/default/files/ivoire_28.png",
+    "https://www.brvm.org/en/node/334": "https://www.brvm.org/sites/default/files/ivoire_24.png"
+  },
+  "by_name": {
+    "AFRICA GLOBAL LOGISTICS AGL COTE D IVOIRE": "https://www.brvm.org/sites/default/files/ivoire_25.png",
+    "BANK OF AFRICA BENIN": "https://www.brvm.org/sites/default/files/benin.png",
+    "BANK OF AFRICA BURKINA FASO": "https://www.brvm.org/sites/default/files/burkina_0.png",
+    "BANK OF AFRICA COTE D IVOIRE": "https://www.brvm.org/sites/default/files/ivoire_26.png",
+    "BANK OF AFRICA MALI": "https://www.brvm.org/sites/default/files/mali_1.png",
+    "BANK OF AFRICA NIGER": "https://www.brvm.org/sites/default/files/niger.png",
+    "BANK OF AFRICA SENEGAL": "https://www.brvm.org/sites/default/files/senegal_1.png",
+    "BANQUE INTERNATIONALE POUR LE COMMERCE ET L INDUSTRIE DE COTE D IVOIRE": "https://www.brvm.org/sites/default/files/ivoire_27.png",
+    "BERNABE": "https://www.brvm.org/sites/default/files/ivoire_28.png",
+    "COMPAGNIE FRANCAISE DE L AFRIQUE OCCIDENTALE EN COTE D IVOIRE CFAO CI": "https://www.brvm.org/sites/default/files/ivoire_24.png"
+  }
+}

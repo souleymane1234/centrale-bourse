@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRVM Dashboard - Analyse des sociétés cotées</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Company selector */
+        .selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+            flex: 1 1 100%;
+        }
+        
+        .selector label {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        .selector select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            min-width: 260px;
+            flex: 1 1 280px;
+        }
+        
+        .refresh-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .refresh-btn:hover {
+            background: #00997a;
+        }
+        
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .hero-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #e9eef8;
+        }
+
+        .hero-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .hero-title-wrap {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .hero-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2563eb 100%);
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.18);
+        }
+
+        .hero-price {
+            text-align: right;
+        }
+
+        .market-panel {
+            margin-bottom: 2rem;
+        }
+
+        .summary-grid,
+        .market-list-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            margin-bottom: 1rem;
+        }
+
+        .market-list-grid {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            margin-top: 1rem;
+        }
+
+        .mini-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .mini-card-title {
+            color: #64748b;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-card-value {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .mini-card-subtitle {
+            margin-top: 0.35rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .index-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .index-name {
+            color: #334155;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .index-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .mover-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+
+        .mover-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .mover-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .mover-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        /* Signal badge */
+        .signal {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .signal.ACHAT {
+            background: #00b894;
+            color: white;
+        }
+        
+        .signal.VENTE {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .signal.NEUTRE {
+            background: #f39c12;
+            color: white;
+        }
+        
+        /* Price */
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin: 0.5rem 0;
+        }
+        
+        .price small {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Metrics */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            margin-top: 1rem;
+        }
+        
+        canvas {
+            max-height: 300px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        /* Error */
+        .error {
+            background: #fee;
+            color: #c0392b;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .subtle {
+            color: #666;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .company-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .company-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #334155;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .variation {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 0.4rem;
+        }
+
+        .variation.positive {
+            color: #00b894;
+        }
+
+        .variation.negative {
+            color: #e74c3c;
+        }
+
+        .variation.neutral {
+            color: #666;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .data-table th {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .links-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .link-chip {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-chip:hover {
+            text-decoration: underline;
+        }
+
+        .empty-note {
+            color: #888;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .warning-note {
+            background: #fff8e1;
+            color: #8a6d1d;
+            border: 1px solid #f3d27a;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+        }
+
+        .source-note {
+            margin-top: 0.6rem;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero-price {
+                text-align: left;
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top-color: #00b894;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 BRVM Investment Dashboard</h1>
+        <p>Analyse technique & fondamentale des sociétés cotées à la Bourse Régionale des Valeurs Mobilières</p>
+    </div>
+    
+    <div class="container">
+        <div id="marketSummary" class="market-panel">
+            <div class="loading">Chargement de la vue marché...</div>
+        </div>
+
+        <div class="selector">
+            <label>📈 Société :</label>
+            <select id="companySelect">
+                <option value="">Chargement...</option>
+            </select>
+            <select id="sectorFilter">
+                <option value="">Tous les secteurs</option>
+            </select>
+            <input id="companySearch" class="search-input" type="search" placeholder="Rechercher une société, un ticker ou un secteur">
+            <button class="refresh-btn" onclick="refreshData()">🔄 Actualiser</button>
+            <span id="lastUpdate" style="margin-left: auto; font-size: 0.8rem; color: #666;"></span>
+        </div>
+        
+        <div id="content">
+            <div class="loading">Chargement des données...</div>
+        </div>
+    </div>
+    
+    <script>
+        let currentChart = null;
+        let companies = [];
+        let filteredCompanies = [];
+        let marketSummary = null;
+
+        function showStartupError(message) {
+            const content = document.getElementById('content');
+            const select = document.getElementById('companySelect');
+
+            content.innerHTML = `<div class="error">${message}</div>`;
+            select.innerHTML = '<option value="">Serveur indisponible</option>';
+        }
+
+        function formatNumber(value) {
+            if (value === null || value === undefined || value === '') {
+                return 'N/A';
+            }
+            return Number(value).toLocaleString('fr-FR');
+        }
+
+        function formatPercent(value) {
+            if (value === null || value === undefined || value === '') {
+                return 'N/A';
+            }
+            return `${Number(value).toLocaleString('fr-FR')}%`;
+        }
+
+        function formatCurrency(value, suffix = 'FCFA') {
+            if (value === null || value === undefined || value === '') {
+                return 'N/A';
+            }
+            return `${Number(value).toLocaleString('fr-FR')} ${suffix}`;
+        }
+
+        function formatText(value) {
+            return value || 'N/A';
+        }
+
+        function getVariationClass(value) {
+            if (value > 0) return 'positive';
+            if (value < 0) return 'negative';
+            return 'neutral';
+        }
+
+        function populateSectorFilter(sectors) {
+            const sectorFilter = document.getElementById('sectorFilter');
+            const currentValue = sectorFilter.value;
+            sectorFilter.innerHTML = '<option value="">Tous les secteurs</option>';
+
+            sectors.forEach((sector) => {
+                const option = document.createElement('option');
+                option.value = sector;
+                option.textContent = sector;
+                sectorFilter.appendChild(option);
+            });
+
+            sectorFilter.value = currentValue && sectors.includes(currentValue) ? currentValue : '';
+        }
+
+        function populateCompanySelect(nextSelectedTicker = null) {
+            const select = document.getElementById('companySelect');
+            const previousValue = nextSelectedTicker || select.value;
+
+            select.innerHTML = '';
+
+            if (filteredCompanies.length === 0) {
+                select.innerHTML = '<option value="">Aucune société trouvée</option>';
+                return;
+            }
+
+            filteredCompanies.forEach((company) => {
+                const option = document.createElement('option');
+                option.value = company.ticker;
+                const extra = company.symbol ? ` (${company.symbol})` : '';
+                option.textContent = `${company.name}${extra}`;
+                select.appendChild(option);
+            });
+
+            const selectedCompany = filteredCompanies.find((company) => company.ticker === previousValue) || filteredCompanies[0];
+            select.value = selectedCompany.ticker;
+        }
+
+        function applyCompanyFilters({ preserveSelection = true, loadSelection = true } = {}) {
+            const sector = document.getElementById('sectorFilter').value;
+            const query = document.getElementById('companySearch').value.trim().toLowerCase();
+            const currentTicker = preserveSelection ? document.getElementById('companySelect').value : null;
+
+            filteredCompanies = companies.filter((company) => {
+                const matchesSector = !sector || company.sector === sector;
+                const haystack = [
+                    company.name,
+                    company.symbol,
+                    company.ticker,
+                    company.sector,
+                ].filter(Boolean).join(' ').toLowerCase();
+                const matchesQuery = !query || haystack.includes(query);
+                return matchesSector && matchesQuery;
+            });
+
+            populateCompanySelect(currentTicker);
+
+            if (loadSelection && filteredCompanies.length > 0) {
+                loadAnalysis(document.getElementById('companySelect').value);
+            } else if (filteredCompanies.length === 0) {
+                document.getElementById('content').innerHTML =
+                    '<div class="error">❌ Aucun résultat ne correspond aux filtres sélectionnés.</div>';
+            }
+        }
+
+        function renderMoverList(title, items) {
+            if (!items || items.length === 0) {
+                return `
+                    <div class="mini-card">
+                        <div class="mini-card-title">${title}</div>
+                        <div class="empty-note">Aucune donnée disponible.</div>
+                    </div>
+                `;
+            }
+
+            const rows = items.map((item) => `
+                <div class="mover-item">
+                    <div>
+                        <div class="mover-name">${formatText(item.name)}</div>
+                        <div class="subtle">${formatText(item.symbol || item.ticker)}${item.sector ? ` • ${item.sector}` : ''}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="mover-name">${formatCurrency(item.price)}</div>
+                        <div class="variation ${getVariationClass(item.variation)}">${formatPercent(item.variation)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="mini-card">
+                    <div class="mini-card-title">${title}</div>
+                    <div class="mover-list">${rows}</div>
+                </div>
+            `;
+        }
+
+        function renderMarketSummary(summary) {
+            const container = document.getElementById('marketSummary');
+            const indices = summary.indices || [];
+            const stats = summary.stats || {};
+
+            const statCards = [
+                { title: 'Sociétés', value: stats.companies_count, subtitle: 'dans le dashboard' },
+                { title: 'Secteurs', value: stats.sectors_count, subtitle: 'disponibles au filtre' },
+                { title: 'Hausses', value: stats.advancing_count, subtitle: 'valeurs en progression' },
+                { title: 'Baisses', value: stats.declining_count, subtitle: 'valeurs en repli' },
+                { title: 'Stables', value: stats.unchanged_count, subtitle: 'sans variation' },
+            ].map((item) => `
+                <div class="mini-card">
+                    <div class="mini-card-title">${item.title}</div>
+                    <div class="mini-card-value">${formatNumber(item.value)}</div>
+                    <div class="mini-card-subtitle">${item.subtitle}</div>
+                </div>
+            `).join('');
+
+            const indexCards = indices.map((index) => `
+                <div class="index-card">
+                    <div class="index-name">${index.name}</div>
+                    <div class="index-value">${formatNumber(index.last)}</div>
+                    <div class="variation ${getVariationClass(index.variation_pct)}">${formatPercent(index.variation_pct)}</div>
+                    <div class="subtle">Ouverture ${formatNumber(index.opening)}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3>🌍 Marché global BRVM</h3>
+                    <div class="summary-grid">${statCards}</div>
+                    <div class="index-grid">${indexCards}</div>
+                    <div class="market-list-grid">
+                        ${renderMoverList('Top hausses', summary.top_gainers)}
+                        ${renderMoverList('Top baisses', summary.top_losers)}
+                    </div>
+                    <div class="source-note">
+                        Source marché: cotation en direct • Dataset généré: ${formatText(summary.generated_at)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupFilters() {
+            document.getElementById('sectorFilter').addEventListener('change', () => {
+                applyCompanyFilters();
+            });
+
+            document.getElementById('companySearch').addEventListener('input', () => {
+                applyCompanyFilters();
+            });
+        }
+
+        function renderLinks(company) {
+            const links = [];
+
+            if (company.website) {
+                links.push(`<a class="link-chip" href="${company.website}" target="_blank" rel="noopener noreferrer">Site web</a>`);
+            }
+            if (company.profile_url) {
+                links.push(`<a class="link-chip" href="${company.profile_url}" target="_blank" rel="noopener noreferrer">Fiche BRVM</a>`);
+            }
+            if (company.report_url) {
+                links.push(`<a class="link-chip" href="${company.report_url}" target="_blank" rel="noopener noreferrer">Rapports BRVM</a>`);
+            }
+
+            if (links.length === 0) {
+                return '';
+            }
+
+            return `<div class="links-row">${links.join('')}</div>`;
+        }
+
+        function renderBoardMembers(boardMembers) {
+            if (!boardMembers || boardMembers.length === 0) {
+                return '<div class="empty-note">Aucune donnée de gouvernance disponible.</div>';
+            }
+
+            const rows = boardMembers.slice(0, 6).map((member) => `
+                <tr>
+                    <td>${formatText(member.name)}</td>
+                    <td>${formatText(member.role)}</td>
+                    <td>${formatText(member.structure)}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Fonction</th>
+                            <th>Structure</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function renderShareholding(shareholding) {
+            const shareholders = shareholding?.shareholders || [];
+            const totalShares = shareholding?.total_shares;
+
+            if (shareholders.length === 0) {
+                return '<div class="empty-note">Aucune donnée d’actionnariat disponible.</div>';
+            }
+
+            const rows = shareholders.slice(0, 6).map((holder) => `
+                <tr>
+                    <td>${formatText(holder.name)}</td>
+                    <td>${formatPercent(holder.percentage)}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="metric-row">
+                    <span class="metric-label">Nombre total d'actions</span>
+                    <span class="metric-value">${formatNumber(totalShares?.value)}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Date de référence</span>
+                    <span class="metric-value">${formatText(totalShares?.as_of)}</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Actionnaire</th>
+                            <th>Part</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function renderFinancialHistory(financialHistory) {
+            if (!financialHistory || financialHistory.length === 0) {
+                return '<div class="empty-note">Aucun historique financier BRVM disponible.</div>';
+            }
+
+            const rows = financialHistory.slice().sort((a, b) => b.year - a.year).slice(0, 5).map((entry) => `
+                <tr>
+                    <td>${formatText(entry.year)}</td>
+                    <td>${formatNumber(entry.revenue_mfcfa)}</td>
+                    <td>${formatNumber(entry.net_income_mfcfa)}</td>
+                    <td>${formatNumber(entry.net_dividend_per_share_fcfa)}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Année</th>
+                            <th>CA (M FCFA)</th>
+                            <th>Résultat net (M FCFA)</th>
+                            <th>Dividende/action</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+        
+        // Charger la liste des entreprises
+        async function loadCompanies() {
+            if (window.location.protocol === 'file:') {
+                showStartupError(
+                    '❌ Ce dashboard ne fonctionne pas en ouvrant directement le fichier HTML. Lancez Flask puis ouvrez http://127.0.0.1:5050/'
+                );
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/companies');
+                if (!response.ok) {
+                    throw new Error(`API /api/companies indisponible (${response.status})`);
+                }
+                companies = await response.json();
+                const sectors = [...new Set(companies.map((company) => company.sector).filter(Boolean))].sort();
+                populateSectorFilter(sectors);
+                filteredCompanies = companies.slice();
+                populateCompanySelect();
+
+                if (filteredCompanies.length > 0) {
+                    loadAnalysis(filteredCompanies[0].ticker);
+                }
+                
+            } catch (error) {
+                console.error('Erreur chargement entreprises:', error);
+                showStartupError(
+                    `❌ Impossible de charger les données. Démarrez l'application Flask puis ouvrez http://127.0.0.1:5050/`
+                );
+            }
+        }
+
+        async function loadMarketSummary() {
+            try {
+                const response = await fetch('/api/market-summary');
+                if (!response.ok) {
+                    throw new Error(`API /api/market-summary indisponible (${response.status})`);
+                }
+
+                marketSummary = await response.json();
+                renderMarketSummary(marketSummary);
+                populateSectorFilter(marketSummary.sectors || []);
+            } catch (error) {
+                document.getElementById('marketSummary').innerHTML =
+                    `<div class="error">❌ Vue marché indisponible : ${error.message}</div>`;
+            }
+        }
+        
+        // Charger l'analyse pour une entreprise
+        async function loadAnalysis(ticker) {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div> Chargement des données...</div>';
+            
+            try {
+                const response = await fetch(`/api/analysis/${ticker}`);
+                if (!response.ok) {
+                    throw new Error(`API /api/analysis/${ticker} indisponible (${response.status})`);
+                }
+                const data = await response.json();
+                
+                if (data.error) {
+                    content.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                    return;
+                }
+                
+                renderDashboard(data);
+                
+                // Mettre à jour l'horodatage
+                document.getElementById('lastUpdate').textContent =
+                    `Dernière mise à jour : ${data.last_updated}`;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">❌ Erreur de connexion : ${error.message}</div>`;
+            }
+        }
+        
+        // Rafraîchir les données
+        async function refreshData() {
+            const select = document.getElementById('companySelect');
+            const ticker = select.value;
+            if (!ticker) return;
+            
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div> Actualisation...</div>';
+            
+            try {
+                const response = await fetch(`/api/refresh/${ticker}`);
+                if (!response.ok) {
+                    throw new Error(`API /api/refresh/${ticker} indisponible (${response.status})`);
+                }
+                const data = await response.json();
+                
+                if (data.error) {
+                    content.innerHTML = `<div class="error">❌ ${data.error}</div>`;
+                    return;
+                }
+                
+                renderDashboard(data);
+                document.getElementById('lastUpdate').textContent =
+                    `Dernière mise à jour : ${data.last_updated}`;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">❌ Erreur : ${error.message}</div>`;
+            }
+        }
+        
+        // Rendre le tableau de bord
+        function renderDashboard(data) {
+            const content = document.getElementById('content');
+            const signalClass = data.signal === 'ACHAT' ? 'ACHAT' : (data.signal === 'VENTE' ? 'VENTE' : 'NEUTRE');
+            const company = data.company || {};
+            const marketQuote = company.market_quote || {};
+            const variationClass = getVariationClass(marketQuote.variation_pct);
+            const heroBadge = formatText(company.symbol || data.ticker).slice(0, 6);
+            
+            content.innerHTML = `
+                <div class="grid">
+                    <div class="card hero-card">
+                        <div class="hero-header">
+                            <div class="hero-title-wrap">
+                                <div class="hero-badge">${heroBadge}</div>
+                                <div>
+                                    <div class="company-name">${formatText(company.name)}</div>
+                                    <div class="company-meta">
+                                        <span class="tag">${formatText(company.symbol || data.ticker)}</span>
+                                        <span class="tag">${formatText(company.sector)}</span>
+                                        <span class="tag">Introduction: ${formatText(company.listing_date)}</span>
+                                    </div>
+                                    <div class="subtle">${formatText(company.legal_name)}</div>
+                                </div>
+                            </div>
+                            <div class="hero-price">
+                                <div class="price">${formatNumber(data.current_price)} <small>FCFA</small></div>
+                                <div class="variation ${variationClass}">${formatPercent(marketQuote.variation_pct)}</div>
+                                <div style="margin-top:0.4rem;"><span class="signal ${signalClass}">${data.signal}</span></div>
+                            </div>
+                        </div>
+                        ${renderLinks(company)}
+                    </div>
+
+                    <!-- Identité société -->
+                    <div class="card">
+                        <h3>🏢 Société</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">Raison sociale</span>
+                            <span class="metric-value">${formatText(company.legal_name)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Capital social</span>
+                            <span class="metric-value">${formatCurrency(company.capital_social)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Adresse</span>
+                            <span class="metric-value">${formatText(company.address)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Boîte postale</span>
+                            <span class="metric-value">${formatText(company.postal_address)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Email</span>
+                            <span class="metric-value">${formatText(company.email)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Téléphone / Fax</span>
+                            <span class="metric-value">${formatText(company.phone)} / ${formatText(company.fax)}</span>
+                        </div>
+                        ${renderLinks(company)}
+                    </div>
+
+                    <!-- Prix et Signal -->
+                    <div class="card">
+                        <h3>💰 Marché</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">Ouverture</span>
+                            <span class="metric-value">${formatCurrency(marketQuote.opening)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Plus haut / bas</span>
+                            <span class="metric-value">${formatCurrency(marketQuote.high)} / ${formatCurrency(marketQuote.low)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Volume journalier</span>
+                            <span class="metric-value">${formatNumber(marketQuote.volume_shares ?? data.historical_prices[data.historical_prices.length - 1]?.volume)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Capitaux échangés</span>
+                            <span class="metric-value">${formatCurrency(marketQuote.volume_xof)}</span>
+                        </div>
+                        <div class="source-note">
+                            Source: cotation marché
+                        </div>
+                    </div>
+                    
+                    <!-- Indicateurs techniques -->
+                    <div class="card">
+                        <h3>📉 Indicateurs techniques</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">RSI (14)</span>
+                            <span class="metric-value">${data.technical.rsi}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">MACD</span>
+                            <span class="metric-value">${data.technical.macd}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">SMA 20</span>
+                            <span class="metric-value">${formatNumber(data.technical.sma_20)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">SMA 50</span>
+                            <span class="metric-value">${formatNumber(data.technical.sma_50)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Bollinger (haut/bas)</span>
+                            <span class="metric-value">${formatNumber(data.technical.bb_upper)} / ${formatNumber(data.technical.bb_lower)}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicateurs fondamentaux -->
+                    <div class="card">
+                        <h3>🏦 Analyse fondamentale</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">Chiffre d'affaires</span>
+                            <span class="metric-value">${data.fundamental.revenue} Md FCFA</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Résultat net</span>
+                            <span class="metric-value">${data.fundamental.net_income} Md FCFA</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">BPA</span>
+                            <span class="metric-value">${formatCurrency(data.fundamental.eps)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">PER</span>
+                            <span class="metric-value">${data.fundamental.pe_ratio}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Rendement dividende</span>
+                            <span class="metric-value">${data.fundamental.dividend_yield}%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">ROE</span>
+                            <span class="metric-value">${data.fundamental.ratios.roe}%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Gouvernance -->
+                    <div class="card">
+                        <h3>👥 Gouvernance</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">Président(e)</span>
+                            <span class="metric-value">${formatText(company.chairman)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Directeur Général</span>
+                            <span class="metric-value">${formatText(company.chief_executive)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Actionnariat -->
+                    <div class="card">
+                        <h3>📊 Actionnariat</h3>
+                        ${renderShareholding(company.shareholding)}
+                    </div>
+
+                    <!-- Historique financier -->
+                    <div class="card">
+                        <h3>🧾 Historique financier BRVM</h3>
+                        ${renderFinancialHistory(company.financial_history)}
+                    </div>
+
+                    <!-- Synthèse -->
+                    <div class="card">
+                        <h3>🧭 Synthèse</h3>
+                        <div class="metric-row">
+                            <span class="metric-label">Ticker interne</span>
+                            <span class="metric-value">${data.ticker}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Signal global</span>
+                            <span class="metric-value">${data.signal}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Marge nette</span>
+                            <span class="metric-value">${formatPercent(data.fundamental.ratios.net_margin)}</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">ROA</span>
+                            <span class="metric-value">${formatPercent(data.fundamental.ratios.roa)}</span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <strong>Perspectives</strong>
+                            <p style="margin-top: 0.5rem; color: #666; line-height: 1.5;">
+                                ${data.fundamental.outlook}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card chart-container">
+                    <h3>📈 Évolution récente du cours</h3>
+                    <canvas id="priceChart"></canvas>
+                </div>
+            `;
+            
+            renderPriceChart(data.historical_prices);
+        }
+
+        function renderPriceChart(prices) {
+            const chartCanvas = document.getElementById('priceChart');
+            if (!chartCanvas || !prices || prices.length === 0) {
+                return;
+            }
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            currentChart = new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: prices.map((item) => item.date),
+                    datasets: [{
+                        label: 'Cours de clôture',
+                        data: prices.map((item) => item.close),
+                        borderColor: '#00b894',
+                        backgroundColor: 'rgba(0, 184, 148, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback(value) {
+                                    return `${value.toLocaleString()} FCFA`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('companySelect').addEventListener('change', (e) => {
+            if (e.target.value) {
+                loadAnalysis(e.target.value);
+            }
+        });
+
+        setupFilters();
+        loadMarketSummary();
+        loadCompanies();
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.env
+.venv/
+venv/
+node_modules/
+frontend/node_modules/
+static/frontend/
+.DS_Store
+data/brvm.db
+data/brvm.db-wal
+data/brvm.db-shm
+brvm_data.db

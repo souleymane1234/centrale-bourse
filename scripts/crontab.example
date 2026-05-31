@@ -1,0 +1,19 @@
+# Exemple crontab — adapter les chemins (/Users/.../brvm_agent)
+# Installer : crontab -e
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+PROJECT=/Users/Souleymane/Desktop/Client/brvm_agent
+PYTHON=/usr/bin/python3
+
+# L'API tourne avec Gunicorn (pas dans ce cron). Config : .env à la racine.
+
+# Scrape complet toutes les 2 h (week-end ignoré par le script)
+0 */2 * * * cd $PROJECT && $PYTHON scrape_companies.py >> logs/scrape.log 2>&1
+
+# Palmarès Sikafinance (Top hausses/baisses) : lun–ven toutes les 4 h
+# Sam–dim : le script conserve le snapshot du vendredi
+0 */4 * * 1-5 cd $PROJECT && $PYTHON scripts/refresh_palmares.py >> logs/palmares.log 2>&1
+
+# Pré-chauffage cache toutes les 5 min
+*/5 * * * * cd $PROJECT && $PYTHON scripts/warm_api_cache.py >> logs/warm.log 2>&1
