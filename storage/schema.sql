@@ -1,4 +1,4 @@
--- Schéma MySQL BRVM Agent (référence — les tables sont créées via SQLAlchemy)
+-- Schéma MySQL Centrale Bourse (référence — les tables sont créées via SQLAlchemy)
 -- mysql -u brvm -p brvm_agent < storage/schema.sql
 
 CREATE TABLE IF NOT EXISTS companies (

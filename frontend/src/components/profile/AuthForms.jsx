@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AuthForms() {
@@ -42,7 +43,7 @@ export default function AuthForms() {
   };
 
   return (
-    <section className="card max-w-lg">
+    <section className="card w-full max-w-md text-center sm:max-w-lg">
       <div className="flex gap-2 rounded-xl bg-slate-100 p-1">
         <button
           type="button"
@@ -70,7 +71,7 @@ export default function AuthForms() {
           : 'Connectez-vous pour gérer votre abonnement et votre parrainage.'}
       </p>
 
-      <form onSubmit={onSubmit} className="mt-5 space-y-3">
+      <form onSubmit={onSubmit} className="mt-5 space-y-3 text-left">
         {mode === 'register' && (
           <>
             <input
@@ -127,6 +128,20 @@ export default function AuthForms() {
         >
           {busy ? 'Patientez...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
         </button>
+
+        {mode === 'register' ? (
+          <p className="text-center text-xs text-slate-500">
+            En créant un compte, vous acceptez les{' '}
+            <Link to="/cgu" className="font-medium text-brand-700 hover:underline">
+              CGU
+            </Link>{' '}
+            et la{' '}
+            <Link to="/confidentialite" className="font-medium text-brand-700 hover:underline">
+              politique de confidentialité
+            </Link>
+            .
+          </p>
+        ) : null}
       </form>
     </section>
   );

@@ -1,4 +1,4 @@
-# BRVM Agent — Dashboard
+# Centrale Bourse — Dashboard
 
 Architecture **API Flask** + **frontend React** (Vite).
 

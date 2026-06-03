@@ -12,6 +12,7 @@ from storage.models import SubscriptionPlan, User, db as sa_db
 from storage.price_sync import sync_quotes_from_company_records
 from storage.seed import seed_subscription_plans
 from api.auth_routes import auth_bp, referrals_bp, subscriptions_bp
+from api.user_features_routes import user_features_bp
 from api.news_routes import news_bp
 from storage.tickers import derive_company_ticker as storage_derive_company_ticker
 from storage.tickers import normalize_identifier as storage_normalize_identifier
@@ -57,6 +58,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(subscriptions_bp)
 app.register_blueprint(referrals_bp)
 app.register_blueprint(news_bp)
+app.register_blueprint(user_features_bp)
 
 def init_database_schema():
     """Crée les tables MySQL/SQLite au démarrage."""
@@ -267,19 +269,18 @@ def get_company_records():
 
 
 def build_company_lookup():
-    """Construit un index des sociétés par alias/ticker."""
-    global company_lookup_cache
-
-    if company_lookup_cache is None:
-        company_lookup_cache = {}
-        for company in get_company_records():
-            for alias in build_company_aliases(company):
-                company_lookup_cache.setdefault(alias, company)
-        for company in get_listed_company_records():
-            for alias in build_company_aliases(company):
-                company_lookup_cache.setdefault(alias, company)
-
-    return company_lookup_cache
+    """
+    Index sociétés par alias/ticker.
+    Les cotations live (liste cotée) écrasent le dataset statique à chaque appel.
+    """
+    lookup = {}
+    for company in get_company_records():
+        for alias in build_company_aliases(company):
+            lookup.setdefault(alias, company)
+    for company in get_listed_company_records():
+        for alias in build_company_aliases(company):
+            lookup[alias] = company
+    return lookup
 
 
 def find_company_for_sikafinance_quote(quote, lookup):
@@ -381,7 +382,8 @@ def get_listed_company_records():
 
 def get_company_by_ticker(ticker):
     """Retrouve une société enrichie à partir d'un ticker interne."""
-    return build_company_lookup().get(normalize_identifier(ticker))
+    company = build_company_lookup().get(normalize_identifier(ticker))
+    return dict(company) if company else None
 
 
 def load_brvm_logo_index():
@@ -1086,6 +1088,54 @@ def _analysis_cache_key(ticker):
     return f"analysis:{normalize_identifier(ticker) or ticker}"
 
 
+def _serialize_market_quote_for_api(quote):
+    if not quote:
+        return {}
+    return {
+        'last': quote.get('last'),
+        'opening': quote.get('opening'),
+        'high': quote.get('high'),
+        'low': quote.get('low'),
+        'variation_pct': quote.get('variation_pct'),
+        'volume_shares': quote.get('volume_shares'),
+        'previous_close': compute_previous_close(quote),
+        'code': quote.get('code'),
+        'name': quote.get('name'),
+    }
+
+
+def _overlay_live_market_quote(payload, ticker):
+    """Injecte la cotation la plus récente (même si l'analyse est en cache)."""
+    if not payload:
+        return payload
+
+    company = get_company_by_ticker(ticker)
+    quote = (company or {}).get('market_quote') or {}
+    if quote.get('last') is None:
+        return payload
+
+    result = dict(payload)
+    serialized = _serialize_market_quote_for_api(quote)
+    result['market_quote'] = serialized
+    result['current_price'] = round(float(quote['last']), 2)
+
+    company_block = dict(result.get('company') or {})
+    company_block['market_quote'] = quote
+    result['company'] = company_block
+
+    historical = result.get('historical_prices')
+    if historical:
+        rows = [dict(row) for row in historical]
+        if rows:
+            rows[-1]['close'] = quote['last']
+            if quote.get('volume_shares') is not None:
+                rows[-1]['volume'] = quote['volume_shares']
+        result['historical_prices'] = rows
+
+    result['last_updated'] = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+    return result
+
+
 def _build_analysis_payload(ticker):
     """Calcule le payload d'analyse (sans réponse Flask)."""
     company = get_company_by_ticker(ticker)
@@ -1214,15 +1264,7 @@ def _build_analysis_payload(ticker):
         'historical_prices': df_analyzed[['date', 'open', 'high', 'low', 'close', 'volume']].tail(60).to_dict('records'),
         'technical_series': TechnicalAnalysis.serialize_series(df_analyzed, limit=60),
         'price_history': price_history_meta,
-        'market_quote': {
-            'last': market_quote.get('last'),
-            'opening': market_quote.get('opening'),
-            'high': market_quote.get('high'),
-            'low': market_quote.get('low'),
-            'variation_pct': market_quote.get('variation_pct'),
-            'volume_shares': market_quote.get('volume_shares'),
-            'previous_close': compute_previous_close(market_quote),
-        },
+        'market_quote': _serialize_market_quote_for_api(market_quote),
         'last_updated': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S'),
         'sources': load_companies_payload().get('sources', {}),
         'dataset_generated_at': load_companies_payload().get('generated_at'),
@@ -1241,6 +1283,7 @@ def get_analysis(ticker):
             lambda: _build_analysis_payload(ticker),
             lock_seconds=min(CACHE_BUILD_LOCK_SECONDS, 90),
         )
+        result = _overlay_live_market_quote(result, ticker)
         response = jsonify(result)
         response.headers['X-Cache-Status'] = cache_state
         return response

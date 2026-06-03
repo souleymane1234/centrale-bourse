@@ -1,11 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { GitCompareArrows, Home, Newspaper, User } from 'lucide-react';
-import logo from '../assets/logo.svg';
+import { GitCompareArrows, Home, Newspaper, Star, User } from 'lucide-react';
+import logo from '../assets/logo.png';
+import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand';
 
 const links = [
   { to: '/', label: 'Accueil', shortLabel: 'Accueil', end: true, Icon: Home },
   { to: '/actualites', label: 'Actualités', shortLabel: 'Actus', Icon: Newspaper },
   { to: '/comparer', label: 'Comparer actions', shortLabel: 'Comparer', Icon: GitCompareArrows },
+  { to: '/suivi', label: 'Suivi', shortLabel: 'Suivi', Icon: Star },
   { to: '/profil', label: 'Profil', shortLabel: 'Profil', Icon: User },
 ];
 
@@ -17,13 +19,13 @@ function LogoLink({ compact = false }) {
     >
       <img
         src={logo}
-        alt="BRVM"
-        className="h-9 w-9 rounded-xl shadow-sm ring-1 ring-slate-200/60 transition group-hover:shadow-md md:h-10 md:w-10"
+        alt={BRAND_NAME}
+        className="h-9 w-9 object-contain transition group-hover:opacity-90 md:h-10 md:w-10"
       />
       {!compact && (
         <div className="leading-tight">
-          <span className="block text-base font-bold tracking-tight text-slate-900">BRVM</span>
-          <span className="block text-[11px] font-medium text-slate-500">Dashboard</span>
+          <span className="block text-base font-bold tracking-tight text-slate-900">{BRAND_NAME}</span>
+          <span className="block text-[11px] font-medium text-slate-500">{BRAND_TAGLINE}</span>
         </div>
       )}
     </NavLink>

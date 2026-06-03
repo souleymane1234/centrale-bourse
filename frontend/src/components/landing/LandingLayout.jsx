@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Moon } from 'lucide-react';
-import logo from '../../assets/logo.svg';
+import logo from '../../assets/logo.png';
+import { BRAND_NAME } from '../../config/brand';
 
 const NAV_LINKS = [
   { hash: '#fonctionnalites', label: 'Fonctionnalités' },
@@ -31,10 +32,10 @@ export default function LandingLayout() {
           <Link to="/bienvenue" className="flex shrink-0 items-center gap-2.5">
             <img
               src={logo}
-              alt=""
-              className="h-9 w-9 rounded-lg bg-amber-400 object-contain p-1 ring-1 ring-amber-500/30"
+              alt={BRAND_NAME}
+              className="h-9 w-9 object-contain"
             />
-            <span className="text-base font-bold text-slate-900">BRVM Agent</span>
+            <span className="text-base font-bold text-slate-900">{BRAND_NAME}</span>
           </Link>
 
           <nav className="flex items-center gap-4 sm:gap-6 lg:gap-8">

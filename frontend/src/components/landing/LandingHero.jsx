@@ -55,7 +55,7 @@ export default function LandingHero() {
           </h1>
 
           <p className="mt-5 text-base leading-relaxed text-slate-600 sm:text-lg">
-            Fini les PDF épars et les tableurs artisanaux. BRVM Agent centralise les cours,
+            Fini les PDF épars et les tableurs artisanaux. Centrale Bourse centralise les cours,
             les analyses sectorielles, les comparatifs et l&apos;actualité du marché régional
             pour décider avec des données claires.
           </p>
@@ -83,7 +83,7 @@ export default function LandingHero() {
           <div className="relative">
             <img
               src={dashboardPreview}
-              alt="Aperçu du tableau de bord BRVM Agent : palmarès, indices et sociétés cotées"
+              alt="Aperçu du tableau de bord Centrale Bourse : palmarès, indices et sociétés cotées"
               className="block h-auto w-full max-w-full drop-shadow-[0_20px_50px_rgba(15,23,42,0.35)]"
               loading="eager"
             />

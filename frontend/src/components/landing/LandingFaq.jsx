@@ -6,7 +6,7 @@ const FAQ_ITEMS = [
     id: 'buy-shares',
     question: 'Puis-je acheter des actions directement sur la plateforme ?',
     answer:
-      'Non. BRVM Agent est un outil d’analyse et d’information boursière : cours, graphiques, comparatifs et actualités. Les ordres d’achat ou de vente passent par votre banque, SGI ou courtier habilité sur la BRVM.',
+      'Non. Centrale Bourse est un outil d’analyse et d’information boursière : cours, graphiques, comparatifs et actualités. Les ordres d’achat ou de vente passent par votre banque, SGI ou courtier habilité sur la BRVM.',
   },
   {
     id: 'beginners',

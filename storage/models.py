@@ -156,6 +156,12 @@ class User(db.Model):
     referral_earnings: Mapped[list["ReferralEarning"]] = relationship(
         back_populates="referrer", foreign_keys="ReferralEarning.referrer_user_id"
     )
+    watchlist_items: Mapped[list["UserWatchlistItem"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    price_alerts: Mapped[list["UserPriceAlert"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class UserSession(db.Model):
@@ -224,3 +230,33 @@ class ReferralEarning(db.Model):
     referrer: Mapped["User"] = relationship(
         back_populates="referral_earnings", foreign_keys=[referrer_user_id]
     )
+
+
+class UserWatchlistItem(db.Model):
+    __tablename__ = "user_watchlist"
+    __table_args__ = (db.UniqueConstraint("user_id", "ticker", name="uq_user_watchlist_ticker"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    ticker: Mapped[str] = mapped_column(String(32), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="watchlist_items")
+
+
+class UserPriceAlert(db.Model):
+    __tablename__ = "user_price_alerts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    ticker: Mapped[str] = mapped_column(String(32), index=True)
+    direction: Mapped[str] = mapped_column(String(8))  # above | below
+    target_price: Mapped[float] = mapped_column(Float)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    note: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    user: Mapped["User"] = relationship(back_populates="price_alerts")

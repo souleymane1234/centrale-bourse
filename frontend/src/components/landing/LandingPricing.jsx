@@ -83,7 +83,7 @@ export default function LandingPricing() {
           <article className="overflow-hidden rounded-2xl border-2 border-slate-900 bg-white shadow-[0_24px_60px_-24px_rgba(15,23,42,0.2)]">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 sm:px-8">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">Abonnement BRVM Agent</h3>
+                <h3 className="text-xl font-bold text-slate-900">Abonnement Centrale Bourse</h3>
                 <p className="mt-1 text-sm text-slate-600">
                   Accès complet à la plateforme d’analyse du marché régional.
                 </p>

@@ -1,4 +1,5 @@
-import { Bell, Maximize2 } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
+import CompanyFollowActions from './follow/CompanyFollowActions';
 import PriceChart from './PriceChart';
 import FinancialMetricChart from './FinancialMetricChart';
 import FinancialStatementsSection from './FinancialStatementsSection';
@@ -167,14 +168,11 @@ export default function AnalysisDashboard({ analysis }) {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-white/60 hover:text-slate-600"
-                aria-label="Alertes (bientôt disponible)"
-                title="Alertes — bientôt disponible"
-              >
-                <Bell className="h-5 w-5" strokeWidth={1.75} />
-              </button>
+              <CompanyFollowActions
+                ticker={analysis.ticker}
+                companyName={company.name}
+                currentPrice={price}
+              />
             </div>
 
             <div className="mt-6 flex flex-wrap items-end gap-3">
