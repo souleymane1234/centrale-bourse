@@ -260,3 +260,29 @@ class UserPriceAlert(db.Model):
     )
 
     user: Mapped["User"] = relationship(back_populates="price_alerts")
+
+
+class NewsArticle(db.Model):
+    __tablename__ = "news_articles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(512))
+    excerpt: Mapped[str | None] = mapped_column(Text)
+    body: Mapped[str | None] = mapped_column(Text)
+    body_html: Mapped[str | None] = mapped_column(Text)
+    badge: Mapped[str] = mapped_column(String(32), default="brvm", index=True)
+    media_type: Mapped[str | None] = mapped_column(String(16))
+    image_url: Mapped[str | None] = mapped_column(String(1024))
+    video_url: Mapped[str | None] = mapped_column(String(1024))
+    thumbnail_url: Mapped[str | None] = mapped_column(String(1024))
+    source: Mapped[str | None] = mapped_column(String(128))
+    source_url: Mapped[str | None] = mapped_column(String(1024))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    ticker: Mapped[str | None] = mapped_column(String(32), index=True)
+    author: Mapped[str | None] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )

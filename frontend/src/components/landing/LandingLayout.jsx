@@ -5,7 +5,7 @@ import { BRAND_NAME } from '../../config/brand';
 
 const NAV_LINKS = [
   { hash: '#fonctionnalites', label: 'Fonctionnalités' },
-  { hash: '#tarifs', label: 'Tarification' },
+  { hash: '#tarifs', label: 'Accès' },
   { hash: '#faq', label: 'FAQ' },
 ];
 

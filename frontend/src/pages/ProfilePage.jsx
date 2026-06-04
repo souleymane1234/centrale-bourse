@@ -19,8 +19,7 @@ export default function ProfilePage() {
         <header className="mb-6 w-full max-w-lg">
           <h1 className="text-2xl font-bold text-slate-900">Mon profil</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Connectez-vous ou créez un compte pour accéder à la plateforme, votre abonnement et
-            votre parrainage.
+            Connectez-vous ou créez un compte pour accéder à la plateforme et gérer votre suivi.
           </p>
         </header>
 
@@ -43,9 +42,7 @@ export default function ProfilePage() {
       <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Mon profil</h1>
-          <p className="mt-0.5 text-sm text-slate-600">
-            Compte, abonnement mensuel, parrainage et solde.
-          </p>
+          <p className="mt-0.5 text-sm text-slate-600">Compte, suivi et alertes.</p>
         </div>
         <button
           type="button"

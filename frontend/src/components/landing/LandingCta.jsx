@@ -2,16 +2,13 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LandingCta() {
-  const { isAuthenticated, hasPlatformAccess } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const primary = (() => {
     if (!isAuthenticated) {
       return { to: '/profil', label: 'Essayer gratuitement' };
     }
-    if (hasPlatformAccess) {
-      return { to: '/', label: 'Accéder à la plateforme' };
-    }
-    return { to: '/profil', label: 'S’abonner' };
+    return { to: '/', label: 'Accéder à la plateforme' };
   })();
 
   return (
@@ -21,8 +18,7 @@ export default function LandingCta() {
           Commencez à investir avec clarté dès aujourd&apos;hui
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base text-slate-300 sm:text-lg">
-          5 jours gratuits, aucune carte de crédit requise. Réabonnement non automatique — vous
-          renouvelez quand vous le souhaitez.
+          Créez un compte gratuit et explorez les cours, analyses et actualités de la BRVM.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">

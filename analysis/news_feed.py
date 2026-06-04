@@ -78,9 +78,17 @@ def _ensure_article_ids(articles):
     return articles
 
 
-def get_all_articles():
+def get_all_articles(*, active_only=True):
+    from storage.news_store import latest_updated_at, load_articles_for_feed
+
+    db_articles = load_articles_for_feed(active_only=active_only)
+    if db_articles is not None:
+        return _ensure_article_ids(db_articles)
+
     payload = load_news_payload()
     articles = _ensure_article_ids(list(payload.get("articles") or []))
+    if active_only:
+        articles = [item for item in articles if item.get("is_active", True)]
     articles.sort(
         key=lambda item: _parse_datetime(item.get("published_at")) or datetime.min.replace(
             tzinfo=timezone.utc
@@ -90,11 +98,20 @@ def get_all_articles():
     return articles
 
 
-def get_article_by_slug(slug):
+def get_article_by_slug(slug, *, active_only=True):
     if not slug:
         return None
     normalized = _slugify(slug)
-    for article in get_all_articles():
+
+    from storage.news_store import get_article_by_slug as db_get_by_slug, load_articles_for_feed
+
+    if load_articles_for_feed(active_only=False) is not None:
+        article = db_get_by_slug(normalized, active_only=active_only)
+        if article:
+            return _ensure_article_ids([article])[0]
+        return None
+
+    for article in get_all_articles(active_only=active_only):
         if article.get("slug") == normalized or article.get("id") == normalized:
             return article
     return None
@@ -133,16 +150,25 @@ def serialize_article_detail(article):
 def list_feed(page=1, per_page=12):
     page = max(1, int(page or 1))
     per_page = max(1, min(50, int(per_page or 12)))
-    articles = get_all_articles()
+    articles = get_all_articles(active_only=True)
     total = len(articles)
     start = (page - 1) * per_page
     end = start + per_page
     items = [serialize_feed_item(article) for article in articles[start:end]]
+
+    from storage.news_store import latest_updated_at, load_articles_for_feed
+
+    generated_at = None
+    if load_articles_for_feed(active_only=False) is not None:
+        generated_at = latest_updated_at()
+    if not generated_at:
+        generated_at = load_news_payload().get("generated_at")
+
     return {
         "items": items,
         "page": page,
         "per_page": per_page,
         "total": total,
         "has_more": end < total,
-        "generated_at": load_news_payload().get("generated_at"),
+        "generated_at": generated_at,
     }

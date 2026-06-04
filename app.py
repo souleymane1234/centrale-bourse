@@ -890,8 +890,11 @@ def _build_market_summary_uncached():
     unchanged = sum(1 for company in quoted_companies if (company.get('variation') or 0) == 0)
 
     payload = load_companies_payload()
+    from storage.market_calendar import get_brvm_market_status
+
     return {
         'indices': get_market_indices(),
+        'market_status': get_brvm_market_status(),
         'stats': {
             'companies_count': len(companies),
             'quoted_companies_count': len(quoted_companies),

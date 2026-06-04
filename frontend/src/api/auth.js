@@ -52,6 +52,15 @@ export function fetchMe() {
   return authRequest('/api/auth/me');
 }
 
+export async function fetchPublicConfig() {
+  const response = await fetch('/api/auth/config');
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Erreur API (${response.status})`);
+  }
+  return data;
+}
+
 export function updateProfile(payload) {
   return authRequest('/api/auth/me', {
     method: 'PATCH',

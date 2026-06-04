@@ -3,7 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 import { formatDateTime } from '../../utils/format';
 
 export default function ReferralSection() {
-  const { user } = useAuth();
+  const { user, paymentsEnabled } = useAuth();
+
+  if (!paymentsEnabled) {
+    return null;
+  }
+
   const referral = user?.referral || {};
   const [copied, setCopied] = useState(false);
 

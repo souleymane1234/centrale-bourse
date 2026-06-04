@@ -11,7 +11,7 @@ from storage.auth_service import (
     update_user_profile,
 )
 from storage.models import SubscriptionPlan, db
-from storage.subscription_service import referral_summary, subscribe_monthly
+from storage.subscription_service import payments_enabled, referral_summary, subscribe_monthly
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 subscriptions_bp = Blueprint("subscriptions", __name__, url_prefix="/api/subscriptions")
@@ -30,6 +30,11 @@ def _require_user():
     if not user:
         return None, (jsonify({"error": "Non authentifié."}), 401)
     return user, None
+
+
+@auth_bp.get("/config")
+def public_config():
+    return jsonify({"payments_enabled": payments_enabled()})
 
 
 @auth_bp.post("/register")
@@ -104,6 +109,8 @@ def update_me():
 
 @subscriptions_bp.get("/plans")
 def list_plans():
+    if not payments_enabled():
+        return jsonify({"plans": []})
     plans = (
         SubscriptionPlan.query.filter_by(is_active=True)
         .filter(SubscriptionPlan.code == "pro_monthly")
@@ -139,6 +146,8 @@ def my_subscription():
 
 @subscriptions_bp.post("/subscribe")
 def subscribe():
+    if not payments_enabled():
+        return jsonify({"error": "Les paiements ne sont pas activés pour le moment."}), 503
     user, err = _require_user()
     if err:
         return err

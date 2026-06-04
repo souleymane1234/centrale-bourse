@@ -24,16 +24,13 @@ function ChartDecoration() {
 }
 
 export default function LandingHero() {
-  const { isAuthenticated, hasPlatformAccess } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const primaryCta = (() => {
     if (!isAuthenticated) {
       return { to: '/profil', label: 'Commencer gratuitement' };
     }
-    if (hasPlatformAccess) {
-      return { to: '/', label: 'Accéder à la plateforme' };
-    }
-    return { to: '/profil', label: "S'abonner" };
+    return { to: '/', label: 'Accéder à la plateforme' };
   })();
 
   return (
@@ -75,7 +72,7 @@ export default function LandingHero() {
             </a>
           </div>
 
-          <p className="mt-4 text-xs text-slate-500">5 jours d&apos;essai offerts · sans carte bancaire</p>
+          <p className="mt-4 text-xs text-slate-500">Compte gratuit · accès complet à la plateforme</p>
         </div>
 
         <div className="relative lg:pl-4">

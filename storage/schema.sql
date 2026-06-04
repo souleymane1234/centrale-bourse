@@ -77,3 +77,29 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
 );
+
+CREATE TABLE IF NOT EXISTS news_articles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(160) NOT NULL UNIQUE,
+    title VARCHAR(512) NOT NULL,
+    excerpt TEXT,
+    body TEXT,
+    body_html TEXT,
+    badge VARCHAR(32) DEFAULT 'brvm',
+    media_type VARCHAR(16),
+    image_url VARCHAR(1024),
+    video_url VARCHAR(1024),
+    thumbnail_url VARCHAR(1024),
+    source VARCHAR(128),
+    source_url VARCHAR(1024),
+    published_at DATETIME(6),
+    ticker VARCHAR(32),
+    author VARCHAR(255),
+    is_active TINYINT(1) DEFAULT 1,
+    created_at DATETIME(6),
+    updated_at DATETIME(6),
+    KEY ix_news_articles_badge (badge),
+    KEY ix_news_articles_published_at (published_at),
+    KEY ix_news_articles_ticker (ticker),
+    KEY ix_news_articles_is_active (is_active)
+);

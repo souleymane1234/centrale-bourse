@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AuthForms() {
-  const { login, register } = useAuth();
+  const { login, register, paymentsEnabled } = useAuth();
   const [mode, setMode] = useState('login');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -67,8 +67,12 @@ export default function AuthForms() {
 
       <p className="mt-4 text-sm text-slate-600">
         {mode === 'register'
-          ? '5 jours d\'accès offerts à l\'inscription, puis abonnement mensuel.'
-          : 'Connectez-vous pour gérer votre abonnement et votre parrainage.'}
+          ? paymentsEnabled
+            ? "5 jours d'accès offerts à l'inscription, puis abonnement mensuel."
+            : 'Créez un compte gratuit pour accéder à toute la plateforme.'
+          : paymentsEnabled
+            ? 'Connectez-vous pour gérer votre abonnement et votre parrainage.'
+            : 'Connectez-vous pour accéder à votre compte et votre suivi.'}
       </p>
 
       <form onSubmit={onSubmit} className="mt-5 space-y-3 text-left">
@@ -88,13 +92,15 @@ export default function AuthForms() {
               onChange={onChange}
               className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
             />
-            <input
-              name="referral_code"
-              placeholder="Code parrain (optionnel)"
-              value={form.referral_code}
-              onChange={onChange}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
-            />
+            {paymentsEnabled ? (
+              <input
+                name="referral_code"
+                placeholder="Code parrain (optionnel)"
+                value={form.referral_code}
+                onChange={onChange}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm uppercase focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              />
+            ) : null}
           </>
         )}
         <input

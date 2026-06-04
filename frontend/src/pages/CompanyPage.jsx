@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { fetchAnalysis, fetchCompanies, refreshAnalysis } from '../api/client';
+import {
+  fetchAnalysis,
+  fetchCompanies,
+  peekAnalysisCache,
+  peekCompaniesCache,
+  refreshAnalysis,
+} from '../api/client';
 import AnalysisDashboard from '../components/AnalysisDashboard';
 import Spinner from '../components/Spinner';
 import { companyPath, normalizeTicker, resolveCompanyTicker } from '../utils/routing';
@@ -9,10 +15,14 @@ export default function CompanyPage() {
   const { ticker: tickerParam } = useParams();
   const navigate = useNavigate();
 
-  const [companies, setCompanies] = useState([]);
-  const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [companies, setCompanies] = useState(() => peekCompaniesCache() || []);
+  const [analysis, setAnalysis] = useState(() =>
+    tickerParam ? peekAnalysisCache(tickerParam) : null
+  );
+  const [loading, setLoading] = useState(() => !peekCompaniesCache());
+  const [analysisLoading, setAnalysisLoading] = useState(
+    () => !(tickerParam && peekAnalysisCache(tickerParam))
+  );
   const [error, setError] = useState(null);
 
   const activeTicker = useMemo(() => {
@@ -22,33 +32,58 @@ export default function CompanyPage() {
 
   const loadAnalysis = useCallback(async (ticker) => {
     if (!ticker) return;
-    setAnalysisLoading(true);
+
+    const cached = peekAnalysisCache(ticker);
+    if (cached) {
+      setAnalysis(cached);
+      setAnalysisLoading(false);
+    } else {
+      setAnalysisLoading(true);
+    }
+
     setError(null);
     try {
-      const data = await fetchAnalysis(ticker);
+      const data = await fetchAnalysis(ticker, { force: Boolean(cached) });
       setAnalysis(data);
     } catch (err) {
-      setError(err.message);
-      setAnalysis(null);
+      if (!cached) {
+        setError(err.message);
+        setAnalysis(null);
+      }
     } finally {
       setAnalysisLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function bootstrap() {
-      setLoading(true);
+      const cached = peekCompaniesCache();
+      if (!cached) {
+        setLoading(true);
+      }
+
       try {
-        const companyList = await fetchCompanies();
-        setCompanies(companyList);
+        const companyList = await fetchCompanies({ force: Boolean(cached) });
+        if (!cancelled) {
+          setCompanies(companyList);
+        }
       } catch (err) {
-        setError(err.message);
+        if (!cancelled && !cached) {
+          setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     bootstrap();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -83,9 +118,11 @@ export default function CompanyPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !companies.length) {
     return <Spinner label="Chargement de la société..." />;
   }
+
+  const showAnalysisSpinner = analysisLoading && !analysis;
 
   return (
     <div className="mx-auto max-w-7xl space-y-5 overflow-x-hidden px-4 py-6 sm:px-6">
@@ -113,8 +150,12 @@ export default function CompanyPage() {
         </div>
       )}
 
-      {analysisLoading && <Spinner label="Analyse en cours..." />}
-      {!analysisLoading && analysis && <AnalysisDashboard analysis={analysis} />}
+      {showAnalysisSpinner && <Spinner label="Analyse en cours..." />}
+      {analysis && (
+        <div className={analysisLoading ? 'opacity-80 transition-opacity' : undefined}>
+          <AnalysisDashboard analysis={analysis} />
+        </div>
+      )}
     </div>
   );
 }

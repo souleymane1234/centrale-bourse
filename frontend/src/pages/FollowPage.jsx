@@ -74,9 +74,9 @@ export default function FollowPage() {
   if (!hasPlatformAccess) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-center">
-        <p className="text-slate-600">Un abonnement actif est requis pour utiliser le suivi et les alertes.</p>
+        <p className="text-slate-600">Votre accès a expiré. Renouvelez depuis votre profil.</p>
         <Link to="/profil" className="mt-4 inline-block text-sm font-semibold text-brand-700">
-          Mon abonnement →
+          Mon profil →
         </Link>
       </div>
     );

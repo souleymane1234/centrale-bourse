@@ -12,7 +12,7 @@ const FAQ_ITEMS = [
     id: 'beginners',
     question: 'Est-ce adapté aux débutants ?',
     answer:
-      'Oui. L’interface est pensée pour être lisible sans jargon excessif : fiches sociétés, courbes, indicateurs expliqués et comparaisons par secteur. L’essai gratuit de 5 jours permet de découvrir la plateforme à votre rythme.',
+      'Oui. L’interface est pensée pour être lisible sans jargon excessif : fiches sociétés, courbes, indicateurs expliqués et comparaisons par secteur. Créez un compte gratuit pour explorer la plateforme à votre rythme.',
   },
   {
     id: 'data-reliability',
@@ -21,22 +21,10 @@ const FAQ_ITEMS = [
       'Les cours, volumes et informations de marché proviennent de sources publiques (BRVM, agrégateurs financiers reconnus). Elles sont rafraîchies régulièrement. Comme tout marché, un léger décalage peut exister ; vérifiez les chiffres critiques avant une décision d’investissement.',
   },
   {
-    id: 'trial-card',
-    question: 'Ai-je besoin d’une carte de crédit pour commencer l’essai gratuit ?',
-    answer:
-      'Non. L’essai de 5 jours ne demande ni carte bancaire ni paiement à l’inscription. Vous créez un compte et accédez à la plateforme ; le paiement n’intervient que si vous choisissez de vous abonner à la fin de l’essai.',
-  },
-  {
     id: 'companies',
     question: 'Quelles entreprises sont couvertes ?',
     answer:
       'Toutes les sociétés cotées à la Bourse régionale des Valeurs mobilières (BRVM) : actions, secteurs, cours du jour, historiques, analyses et actualités liées au marché régional.',
-  },
-  {
-    id: 'renewal',
-    question: 'Le réabonnement est-il automatique ?',
-    answer:
-      'Non. Aucun prélèvement automatique n’est effectué à l’échéance de votre abonnement. À la fin de la période (essai, mois ou année), vous décidez vous-même de renouveler depuis votre profil, via Mobile Money (Wave, Orange Money, MTN Money, Moov Money) ou carte Visa.',
   },
 ];
 

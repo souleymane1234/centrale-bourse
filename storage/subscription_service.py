@@ -13,6 +13,10 @@ REFERRAL_COMMISSION_RATE = float(os.getenv("REFERRAL_COMMISSION_RATE", "0.20"))
 MONTHLY_DURATION_DAYS = 30
 
 
+def payments_enabled():
+    return os.getenv("PAYMENTS_ENABLED", "false").lower() in ("1", "true", "yes")
+
+
 def _utcnow():
     return datetime.now(timezone.utc)
 
@@ -107,6 +111,9 @@ def credit_referral_commission(referrer, referred_user, subscription, payment_fc
 
 
 def subscribe_monthly(user, *, payment_reference=None, mock_payment=None):
+    if not payments_enabled():
+        raise ValueError("Les paiements ne sont pas activés pour le moment.")
+
     plan = get_plan_by_code(MONTHLY_PLAN_CODE)
     if not plan:
         raise ValueError("Plan d'abonnement mensuel indisponible.")
@@ -176,6 +183,16 @@ def subscription_days_remaining(subscription):
 
 
 def user_access_state(user):
+    if not payments_enabled():
+        return {
+            "has_access": True,
+            "reason": "free",
+            "days_remaining": None,
+            "is_trial": False,
+            "is_paid": False,
+            "can_subscribe": False,
+        }
+
     sub = get_active_subscription(user)
     if not sub:
         return {

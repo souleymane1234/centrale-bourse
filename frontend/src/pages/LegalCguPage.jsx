@@ -23,16 +23,16 @@ export default function LegalCguPage() {
       <Section title="3. Compte utilisateur">
         <p>
           L&apos;inscription nécessite des informations exactes. Vous êtes responsable de la
-          confidentialité de vos identifiants. Un essai gratuit peut être offert à l&apos;inscription ;
-          l&apos;abonnement payant est facultatif et non renouvelé automatiquement.
+          confidentialité de vos identifiants. L&apos;accès à la plateforme est gratuit pour le
+          moment ; une offre payante pourra être proposée ultérieurement.
         </p>
       </Section>
 
-      <Section title="4. Abonnement et paiement">
+      <Section title="4. Évolution du service">
         <p>
-          Les tarifs en vigueur sont affichés sur la page Tarification. Le paiement s&apos;effectue
-          via les moyens proposés (Mobile Money, carte Visa). Aucun prélèvement automatique
-          n&apos;est effectué sans action de votre part au moment du renouvellement.
+          KS Solution se réserve le droit de proposer à l&apos;avenir des formules payantes ou des
+          fonctionnalités additionnelles. Les utilisateurs seront informés avant toute mise en place
+          de facturation.
         </p>
       </Section>
 

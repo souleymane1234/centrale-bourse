@@ -9,6 +9,7 @@ from storage.models import Subscription, User, UserSession, db
 from storage.subscription_service import (
     ensure_user_referral_code,
     get_active_subscription,
+    payments_enabled,
     referral_summary,
     resolve_referrer,
     start_trial_subscription,
@@ -107,6 +108,7 @@ def serialize_user(user):
 
     return {
         "id": user.id,
+        "payments_enabled": payments_enabled(),
         "email": user.email,
         "full_name": user.full_name,
         "phone": user.phone,

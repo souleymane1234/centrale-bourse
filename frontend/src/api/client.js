@@ -1,4 +1,12 @@
+import { deleteCache, readCache, writeCache } from './memoryCache';
+import { normalizeTicker } from '../utils/routing';
+
 const API_BASE = import.meta.env.DEV ? '' : '';
+
+const COMPANIES_CACHE_KEY = 'companies';
+const ANALYSIS_CACHE_PREFIX = 'analysis:';
+const COMPANIES_TTL_MS = 10 * 60 * 1000;
+const ANALYSIS_TTL_MS = 10 * 60 * 1000;
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, options);
@@ -9,13 +17,45 @@ async function request(path, options = {}) {
   return data;
 }
 
-export function fetchCompanies() {
-  return request('/api/companies');
+export function peekCompaniesCache() {
+  return readCache(COMPANIES_CACHE_KEY);
 }
 
-/** Accueil : sociétés + résumé marché (1 requête, cache serveur). */
-export function fetchHome() {
-  return request('/api/home');
+export function seedCompaniesCache(companies) {
+  if (Array.isArray(companies) && companies.length) {
+    writeCache(COMPANIES_CACHE_KEY, companies, COMPANIES_TTL_MS);
+  }
+}
+
+export function peekAnalysisCache(ticker) {
+  const key = `${ANALYSIS_CACHE_PREFIX}${normalizeTicker(ticker)}`;
+  return readCache(key);
+}
+
+export function invalidateAnalysisCache(ticker) {
+  const key = `${ANALYSIS_CACHE_PREFIX}${normalizeTicker(ticker)}`;
+  deleteCache(key);
+}
+
+export async function fetchCompanies({ force = false } = {}) {
+  if (!force) {
+    const cached = readCache(COMPANIES_CACHE_KEY);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const data = await request('/api/companies');
+  writeCache(COMPANIES_CACHE_KEY, data, COMPANIES_TTL_MS);
+  return data;
+}
+
+export async function fetchHome() {
+  const data = await request('/api/home');
+  if (Array.isArray(data.companies)) {
+    seedCompaniesCache(data.companies);
+  }
+  return data;
 }
 
 export function fetchCompareBySector() {
@@ -32,12 +72,23 @@ export function fetchMarketSummary() {
   return request('/api/market-summary');
 }
 
-export function fetchAnalysis(ticker) {
-  return request(`/api/analysis/${ticker}`);
+export async function fetchAnalysis(ticker, { force = false } = {}) {
+  const cacheKey = `${ANALYSIS_CACHE_PREFIX}${normalizeTicker(ticker)}`;
+  if (!force) {
+    const cached = readCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const data = await request(`/api/analysis/${encodeURIComponent(ticker)}`);
+  writeCache(cacheKey, data, ANALYSIS_TTL_MS);
+  return data;
 }
 
-export function refreshAnalysis(ticker) {
-  return request(`/api/refresh/${ticker}`);
+export async function refreshAnalysis(ticker) {
+  invalidateAnalysisCache(ticker);
+  return fetchAnalysis(ticker, { force: true });
 }
 
 export function fetchNews(page = 1, perPage = 12) {

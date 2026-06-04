@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchHome } from '../api/client';
 import MarketSummary from '../components/MarketSummary';
+import MarketStatusBanner from '../components/MarketStatusBanner';
 import MoverTicker from '../components/MoverTicker';
 import CompanyToolbar from '../components/CompanyToolbar';
 import CompanyCardsGrid from '../components/CompanyCardsGrid';
@@ -119,6 +120,8 @@ export default function HomePage() {
           {error}
         </div>
       )}
+
+      <MarketStatusBanner status={marketSummary?.market_status} />
 
       <MarketSummary summary={marketSummary} />
 
