@@ -1,3 +1,5 @@
+import { apiUrl } from '../config/api';
+
 const TOKEN_KEY = 'brvm_auth_token';
 
 export function getAuthToken() {
@@ -22,7 +24,7 @@ async function authRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(apiUrl(path), { ...options, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.error || `Erreur API (${response.status})`);
@@ -53,7 +55,7 @@ export function fetchMe() {
 }
 
 export async function fetchPublicConfig() {
-  const response = await fetch('/api/auth/config');
+  const response = await fetch(apiUrl('/api/auth/config'));
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.error || `Erreur API (${response.status})`);

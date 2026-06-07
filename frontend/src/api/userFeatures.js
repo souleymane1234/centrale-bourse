@@ -1,3 +1,4 @@
+import { apiUrl } from '../config/api';
 import { getAuthToken } from './auth';
 
 async function userRequest(path, options = {}) {
@@ -10,7 +11,7 @@ async function userRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(apiUrl(path), { ...options, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.error || `Erreur API (${response.status})`);

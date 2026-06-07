@@ -599,4 +599,32 @@ print(get_db_engine(), get_mysql_url().split('@')[-1])
 
 ---
 
+## 19. Exemple production actuelle (IP publique)
+
+| Élément | URL |
+|---------|-----|
+| **Site (frontend)** | http://13.140.137.171:8080/ |
+| **API (base)** | http://13.140.137.171:8080/api |
+| **Santé API** | http://13.140.137.171:8080/api/health |
+| **Accueil** | http://13.140.137.171:8080/api/home |
+
+Dans le `.env` du VPS :
+
+```env
+CORS_ORIGINS=http://13.140.137.171:8080
+```
+
+> **Important :** `CORS_ORIGINS` = URL du **site**, sans `/api`. Le frontend appelle `/api/...` en relatif sur la même origine — aucune variable `VITE_API_URL` n’est nécessaire.
+
+Modèle prêt à l’emploi : `deploy/env.production.13.140.137.171.example`
+
+Vérification rapide :
+
+```bash
+curl -s http://13.140.137.171:8080/api/health | python3 -m json.tool
+curl -s -o /dev/null -w "%{http_code}" http://13.140.137.171:8080/
+```
+
+---
+
 *Document généré pour le projet Centrale Bourse — à mettre à jour lors des évolutions majeures (paiement, domaine, workers).*

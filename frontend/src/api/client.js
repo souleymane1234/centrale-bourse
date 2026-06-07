@@ -1,7 +1,6 @@
+import { apiUrl } from '../config/api';
 import { deleteCache, readCache, writeCache } from './memoryCache';
 import { normalizeTicker } from '../utils/routing';
-
-const API_BASE = import.meta.env.DEV ? '' : '';
 
 const COMPANIES_CACHE_KEY = 'companies';
 const ANALYSIS_CACHE_PREFIX = 'analysis:';
@@ -9,7 +8,7 @@ const COMPANIES_TTL_MS = 10 * 60 * 1000;
 const ANALYSIS_TTL_MS = 10 * 60 * 1000;
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, options);
+  const response = await fetch(apiUrl(path), options);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw new Error(data.error || `Erreur API (${response.status})`);
